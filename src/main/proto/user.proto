@@ -1,0 +1,90 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.grpc.proto";
+option java_outer_classname = "UserProto";
+
+package user;
+
+// User message definition
+message User {
+  int64 id = 1;
+  string username = 2;
+  string email = 3;
+  string first_name = 4;
+  string last_name = 5;
+  bool active = 6;
+}
+
+// Request to create a new user
+message CreateUserRequest {
+  string username = 1;
+  string email = 2;
+  string first_name = 3;
+  string last_name = 4;
+}
+
+// Request to get a user by ID
+message GetUserRequest {
+  int64 id = 1;
+}
+
+// Request to update a user
+message UpdateUserRequest {
+  int64 id = 1;
+  string username = 2;
+  string email = 3;
+  string first_name = 4;
+  string last_name = 5;
+  bool active = 6;
+}
+
+// Request to delete a user
+message DeleteUserRequest {
+  int64 id = 1;
+}
+
+// Request to list all users
+message ListUsersRequest {
+  int32 page = 1;
+  int32 size = 2;
+}
+
+// Response containing a single user
+message UserResponse {
+  bool success = 1;
+  string message = 2;
+  User user = 3;
+}
+
+// Response containing a list of users
+message ListUsersResponse {
+  bool success = 1;
+  string message = 2;
+  repeated User users = 3;
+  int32 total_count = 4;
+}
+
+// Response for delete operation
+message DeleteUserResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// User Service definition with CRUD operations
+service UserService {
+  // Create a new user
+  rpc CreateUser(CreateUserRequest) returns (UserResponse);
+
+  // Get a user by ID
+  rpc GetUser(GetUserRequest) returns (UserResponse);
+
+  // Update an existing user
+  rpc UpdateUser(UpdateUserRequest) returns (UserResponse);
+
+  // Delete a user
+  rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
+
+  // List all users with pagination
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+}
