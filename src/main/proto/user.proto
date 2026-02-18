@@ -4,6 +4,8 @@ option java_multiple_files = true;
 option java_package = "com.grpc.proto";
 option java_outer_classname = "UserProto";
 
+import "ewallet.proto";
+
 package user;
 
 // User message definition
@@ -55,6 +57,7 @@ message UserResponse {
   bool success = 1;
   string message = 2;
   User user = 3;
+  repeated ewallet.Account accounts = 4;
 }
 
 // Response containing a list of users

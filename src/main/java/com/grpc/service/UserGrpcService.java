@@ -2,16 +2,25 @@ package com.grpc.service;
 
 import com.grpc.model.User;
 import com.grpc.proto.*;
+import com.grpc.proto.ewallet.Account;
+import com.grpc.proto.ewallet.EWalletServiceGrpc;
+import com.grpc.proto.ewallet.GetAccountsByUserIdRequest;
+import com.grpc.proto.ewallet.GetAccountsByUserIdResponse;
 import com.grpc.repository.UserRepository;
 import io.grpc.stub.StreamObserver;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import net.devh.boot.grpc.client.inject.GrpcClient;
 import net.devh.boot.grpc.server.service.GrpcService;
 
 @GrpcService
 public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
 
     private final UserRepository userRepository;
+
+    @GrpcClient("ewallet-service")
+    private EWalletServiceGrpc.EWalletServiceBlockingStub eWalletServiceStub;
 
     public UserGrpcService(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -100,10 +109,13 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
                 return;
             }
 
+            List<Account> accounts = fetchAccountsByUserId(request.getId());
+
             responseObserver.onNext(UserResponse.newBuilder()
                     .setSuccess(true)
                     .setMessage("User retrieved successfully")
                     .setUser(mapToProtoUser(userOptional.get()))
+                    .addAllAccounts(accounts)
                     .build());
             responseObserver.onCompleted();
 
@@ -222,6 +234,19 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
                     .build());
             responseObserver.onCompleted();
         }
+    }
+
+    private List<Account> fetchAccountsByUserId(long userId) {
+        try {
+            GetAccountsByUserIdResponse response = eWalletServiceStub.getAccountsByUserId(
+                    GetAccountsByUserIdRequest.newBuilder().setUserId(userId).build());
+            if (response.getSuccess()) {
+                return response.getAccountsList();
+            }
+        } catch (Exception e) {
+            // ewallet service unavailable — return empty list so getUser still succeeds
+        }
+        return Collections.emptyList();
     }
 
     private com.grpc.proto.User mapToProtoUser(User user) {

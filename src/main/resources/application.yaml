@@ -8,3 +8,7 @@ server:
 grpc:
   server:
     port: 9090
+  client:
+    ewallet-service:
+      address: static://localhost:9091
+      negotiation-type: plaintext
